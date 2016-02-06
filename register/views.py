@@ -6,7 +6,13 @@ from django.core.urlresolvers import reverse_lazy
 from register.forms import *
 
 # Create your views here.
+class CurrentUserMixin(object):
+    model = User
 
+    def get_object(self, *args, **kwargs):
+        try: obj = super(CurrentUserMixin, self).get_object(*args, **kwargs)
+        except AttributeError: obj = self.request.user
+        return obj
 
 class Home(TemplateView):
     template_name = "index.html"
@@ -28,3 +34,9 @@ class UserRegistrationView(AnonymousRequiredMixin, FormView):
 
 class UserRegistrationSuccessView(TemplateView):
     template_name = "success.html"
+
+class UserProfileUpdateView(LoginRequiredMixin, CurrentUserMixin, UpdateView):
+    model = User
+    fields = user_fields
+    template_name_suffix = '_update_form'
+    success_url = '/register/user/profile/edit/success/'
